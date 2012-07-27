@@ -3,7 +3,7 @@ class SeatsController < ApplicationController
   # GET /seats.json
   def index
     @seats = Seat.all
-
+    @onload = 'init'
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @seats }

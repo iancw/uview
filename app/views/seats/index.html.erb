@@ -1,23 +1,7 @@
-<h1>Listing seats</h1>
+<div id="infodiv"></div>
+<div class="wrap">
+  <canvas id="seatCanvas" height=400 width=400>
+    Your browser doesn't support HTML 5 canvas, so this web page won't work.
+  </canvas>
 
-<table>
-  <tr>
-    <th>State</th>
-    <th></th>
-    <th></th>
-    <th></th>
-  </tr>
-
-<% @seats.each do |seat| %>
-  <tr>
-    <td><%= seat.state %></td>
-    <td><%= link_to 'Show', seat %></td>
-    <td><%= link_to 'Edit', edit_seat_path(seat) %></td>
-    <td><%= link_to 'Destroy', seat, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-  </tr>
-<% end %>
-</table>
-
-<br />
-
-<%= link_to 'New Seat', new_seat_path %>
+</div>
