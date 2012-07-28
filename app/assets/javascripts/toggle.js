@@ -89,16 +89,28 @@ function loadSeatsJSON(seatsJSON)
     }
 }
 
-function sendSeatsJSON(){
-    var url = "seats.json"
-    request.open("POST", url, true)
-    request.onreadystatechange=
-    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    request.send(seats.toJSONString());
+function makeSeatJSON(seatno){
+    return JSON.stringify({id: seatno+1, state: seats[seatno]});
+}
+
+function sendSeatsJSON(seatno){
+    var url = "/seats/"+(seatno+1)+".json";
+    request.open("PUT", url, true);
+    request.onreadystatechange=handlePostResponse;
+    request.setRequestHeader("Content-Type", "application/json");
+    request.setRequestHeader("Accepts", "application/json");
+    request.send(makeSeatJSON(seatno));
+}
+
+function handlePostResponse(){
+    if (request.readyState == 4) {
+        if(request.status >= 300){
+            alert("Status: "+request.status+", "+request.responseText);
+        }
+    }
 }
 
 function hardcodeSeats(){
-
     //Initialize all seats to 0
     for(sec=0; sec<sections.length; sec++){
         for(r=0; r<sections[sec].numRows; r++){
@@ -166,7 +178,9 @@ function process(evt) {
     else{
         seats[pickedseat]=0;
     }
+    sendSeatsJSON(pickedseat);
     draw(canvas, realColor);
+
 }
 
 function getSeat(mousePos){
