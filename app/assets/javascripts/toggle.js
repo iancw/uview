@@ -78,9 +78,9 @@ function loadSeatsJSON(seatsJSON)
     if (request.readyState == 4) {
         if(request.status == 200){
             var seatsJSON = jQuery.parseJSON(request.responseText);
+            seats=[seatsJSON.length];
             for(six=0; six<seatsJSON.length; six++){
-                seats[seats.length]=seatsJSON[six].state;
-                alert("Seat: "+seatsJSON[six].id+"=>"+seats[seats.length-1]);
+                seats[seatsJSON[six].id-1]=seatsJSON[six].state;
             }
             redraw()
         }else{
