@@ -70,10 +70,30 @@ function initSeats(){
     request.onreadystatechange = loadSeatsJSON;
     request.open("GET", url, true);
     request.send(null);
-    loadSeatsJSON();
 }
 
-function loadSeatsJSON(seatsJSON)
+function poll(){
+    var url = "/seats.json"
+    request.onreadystatechange = refreshSeats;
+    request.open("GET", url, true);
+    request.send(null);
+}
+
+function refreshSeats(){
+     if (request.readyState == 4) {
+        if(request.status == 200){
+            var seatsJSON = jQuery.parseJSON(request.responseText);
+            for(sji=0; sji<seatsJSON.length; sji++){
+                var curJson=seatsJSON[sji];
+                seats[curJson.id-1]=curJson.state;
+            }
+            redraw();
+            setTimeout(poll, 5000);
+        }
+    }
+}
+
+function loadSeatsJSON()
 {
     if (request.readyState == 4) {
         if(request.status == 200){
@@ -212,6 +232,8 @@ function init() {
     ghostcanvas.height = canvas.height;
     ghostcanvas.width = canvas.width;
     draw(ghostcanvas, pickColor);
+
+    poll();
 }
 
 function getMousePos(evt) {
