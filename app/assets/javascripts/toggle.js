@@ -4,7 +4,8 @@ var image;
 
 var seats = [];
 
-var winW = 630, winH = 460;
+var winW = 800, winH = 600;
+/*
 if (document.body && document.body.offsetWidth) {
  winW = document.body.offsetWidth;
  winH = document.body.offsetHeight;
@@ -18,7 +19,7 @@ if (document.compatMode=='CSS1Compat' &&
 if (window.innerWidth && window.innerHeight) {
  winW = window.innerWidth;
  winH = window.innerHeight;
-}
+}*/
 
 canvWidth=winW;
 canvHeight=winH-50;
