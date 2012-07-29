@@ -40,16 +40,24 @@ class SeatsController < ApplicationController
   # POST /seats
   # POST /seats.json
   def create
-    @seat = Seat.new(params[:seat])
-
     respond_to do |format|
-      if @seat.save
-        format.html { redirect_to @seat, notice: 'Seat was successfully created.' }
-        format.json { render json: @seat, status: :created, location: @seat }
-      else
-        format.html { render action: "new" }
-        format.json { render json: @seat.errors, status: :unprocessable_entity }
-      end
+      format.html { 
+        @seat = Seat.new(params[:seat])
+        if @seat.save
+          redirect_to @seat, notice: 'Seat was successfully created.'
+        else
+          render action: "new"
+        end
+      }
+      format.json {  
+        json=params[:_json]
+        json.each do |update|
+          @seat = Seat.find(update[:id])
+          logger.debug "updating seat #{update[:id]} state to #{update[:state]}"
+          @seat.update_attributes({:state => update[:state]})
+        end
+        head :no_content
+      }
     end
   end
 

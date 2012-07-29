@@ -154,12 +154,20 @@ function sendSeatsJSON(seatno){
     request.send(makeSeatJSON(seatno));
 }
 
+function postMultipleSeats(seatArr){
+    var url = "/seats.json";
+    request.open("POST", url, true);
+    request.onreadystatechange=handlePostResponse;
+    request.setRequestHeader("Content-Type", "application/json");
+    request.setRequestHeader("Accepts", "application/json");
+    request.send(JSON.stringify(seatArr));
+}
+
 function handlePostResponse(){
     if (request.readyState == 4) {
         if(request.status >= 300){
             alert("Status: "+request.status+", "+request.responseText);
         }
-        alert("Received put response (HTTP: "+request.status+"/"+request.responseText+".");
     }
 }
 
@@ -276,13 +284,16 @@ function process(evt) {
         if(filled > empty){
             fillval=0;
         }
+        var allModified=[];
         for(sso=0; sso<seatoff; sso++){
-            if(seats[sec.startseat + sso] != fillval){
-                sendSeatsJSON(sec.startseat + sso);
-                seats[sec.startseat + sso] = fillval
+            var seatno = sec.startseat + sso;
+            if(seats[seatno] != fillval){
+                seats[seatno] = fillval;
+                allModified[allModified.length] = {id: (seatno+1), state: seats[seatno]};
             }
-
-
+        }
+        if(allModified.length > 0){
+            postMultipleSeats(allModified);
         }
         draw(canvas, realColor, filledColor);
     }
@@ -329,6 +340,7 @@ function init() {
     canvas = document.getElementById('seatCanvas');
     canvas.width  = canvWidth;
     canvas.height = canvHeight;
+    alert("Width: "+canvWidth+", height: "+canvHeight);
     canvas.addEventListener('click', process, false);
     draw(canvas, realColor, filledColor);
 
