@@ -159,6 +159,7 @@ function handlePostResponse(){
         if(request.status >= 300){
             alert("Status: "+request.status+", "+request.responseText);
         }
+        alert("Received put response (HTTP: "+request.status+"/"+request.responseText+".");
     }
 }
 
@@ -256,7 +257,36 @@ function process(evt) {
     var mous = getMousePos(evt);
 
     var pickedseat = getSeat(mous);
-    if(pickedseat < seats.length){
+
+    if(pickedseat < 0){
+        //Select or deselect all seats in the section...
+        sec=sections[(-1*pickedseat)-1]
+        var filled=0, empty=0, seatoff=0;
+        for(ssi=0; ssi<sec.rows.length; ssi++){
+            for(rri=0; rri<sec.rows[ssi]; rri++){
+                if(seats[sec.startseat+seatoff]==1){
+                    filled++;
+                }else{
+                    empty++;
+                }
+                seatoff++;
+            }
+        }
+        var fillval=1;
+        if(filled > empty){
+            fillval=0;
+        }
+        for(sso=0; sso<seatoff; sso++){
+            if(seats[sec.startseat + sso] != fillval){
+                sendSeatsJSON(sec.startseat + sso);
+                seats[sec.startseat + sso] = fillval
+            }
+
+
+        }
+        draw(canvas, realColor, filledColor);
+    }
+    if(pickedseat < seats.length && pickedseat >= 0){
         if(seats[pickedseat]==0){ 
             seats[pickedseat]=1;
         }
@@ -268,14 +298,25 @@ function process(evt) {
     }
 }
 
+/*
+* If value returned is greater than 1, it's a seat number
+* If it's less than 1, it's a section number
+*/
 function getSeat(mousePos){
     if(mousePos.x >= ghostcanvas.width || mousePos.y >= ghostcanvas.height){
-        return -1;
+        return -257;
     }
     var gctx = ghostcanvas.getContext('2d');
     var data = gctx.getImageData(mousePos.x, mousePos.y, 1, 1);
-
-    return data.data[0];
+    //Sections have zeroed red and blue components
+    if(data.data[0]==0 && data.data[1]==0){
+        var retval= (-1 * data.data[2])-1;
+        return retval;
+    }else if(data.data[2]==0){
+        return data.data[0];
+    }
+    return -258;
+    
 }
 
 function redraw(){
