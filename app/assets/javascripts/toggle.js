@@ -4,59 +4,6 @@ var image;
 
 var seats = [];
 
-var dims = {width:10, height:10};
-var spacing = 5;
-
-
-//main hall balcony...
-var section1 = {
-    startseat: 0,
-    sectionno: 0,
-    angle: 0,
-    offsetx: 5,
-    offsety: 0,
-    rows: [7, 5, 5, 5, 8, 8, 8, 8]
-};
-
-var section2 = {
-    startseat: 0,
-    sectionno: 1,
-    angle: 0,
-    offsetx: 8*(dims.width+spacing)+2*spacing,
-    offsety: 0,
-    rows: [8, 6, 6, 12, 12, 11, 10, 9]
-}
-
-var section3 = {
-    startseat:0,
-    sectionno:2,
-    angle: 90,
-    offsetx: section2.offsetx + 12*(dims.width+spacing) + 2*spacing,
-    offsety: section2.rows.length * (dims.height+spacing) + 2*spacing,
-    rows: [14, 10, 9]
-}
-
-var section4 = {
-    startseat:0,
-    sectionno:3,
-    angle:90,
-    offsetx: section3.offsetx,
-    offsety: section3.offsety + 14*(dims.height+spacing) + 2*spacing,
-    rows: [8, 8, 8]
-}
-
-var section5 = {
-    startseat:0,
-    sectionno:4,
-    angle:180,
-    offsetx:section4.offsetx - section4.rows.length*(dims.width+spacing) - 2*spacing,
-    offsety: section4.offsety + 4*(dims.width+spacing) + 8*(dims.width+spacing),
-    rows: [7, 7, 9, 10]
-}
-
-
-var sections = new Array(section1, section2, section3, section4, section5);
-
 var winW = 630, winH = 460;
 if (document.body && document.body.offsetWidth) {
  winW = document.body.offsetWidth;
@@ -218,10 +165,11 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
     section.startseat=seatno;
     var filled=0;
     var empty=0;
-
+    //For each row in the section...
     for(ro=0; ro<section.rows.length; ro++){
+        //for each seat in the row...
         for(i=0; i<section.rows[ro]; i++){
-            var radius=i*(dims.width+spacing);
+            var radius=section.rowoffsets[ro]*(dims.width+spacing) + i*(dims.width+spacing);
             context.fillStyle = colorfunc(seatno);
             if(seats[seatno] == 0){empty++;}
             else{ filled++; }
