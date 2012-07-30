@@ -4,7 +4,7 @@ var image;
 
 var seats = [];
 
-var winW = 800, winH = 600;
+var winW = 650, winH = 650;
 /*
 if (document.body && document.body.offsetWidth) {
  winW = document.body.offsetWidth;
@@ -138,7 +138,8 @@ function compToHex(c){
 function pickColorSeat(seatno){
 //    alert(str.fontcolor(rgb(seatno, seatno, seatno)));
 //    return str.fontcolor(rgb(seatno, seatno, seatno));
-    return "#" + compToHex(seatno) + compToHex(seatno) + compToHex(0);
+    var retval= "#" + compToHex(seatno % 256) + compToHex(Math.floor(seatno / 256)) + compToHex(0);
+    return retval;
 }
 
 function pickColorSection(filled, sectionno){
@@ -187,8 +188,13 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
         sectionCol=0;
     }
     context.fillStyle=sectioncolor(sectionCol, section.sectionno);
+    var sectoffset = section.rowoffsets[section.rows.length-1];
     context.beginPath();
-    context.arc(dims.width, dims.height,dims.width, 0,Math.PI*2,true);
+    context.arc(dims.width + sectoffset*perseat,
+        dims.height,
+        dims.width, 
+        0, Math.PI*2,true);
+
     context.closePath();
     context.fill();
 
@@ -273,7 +279,7 @@ function getSeat(mousePos){
         var retval= (-1 * data.data[2])-1;
         return retval;
     }else if(data.data[2]==0){
-        return data.data[0];
+        return data.data[0] + data.data[1]*256;
     }
     return -258;
     
@@ -289,7 +295,7 @@ function init() {
     canvas = document.getElementById('seatCanvas');
     canvas.width  = canvWidth;
     canvas.height = canvHeight;
-    alert("Width: "+canvWidth+", height: "+canvHeight);
+
     canvas.addEventListener('click', process, false);
     draw(canvas, realColor, filledColor);
 
