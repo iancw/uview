@@ -111,8 +111,8 @@ var section_m2 = {
     startseat: 0,
     sectionno: 0,
     angle: 45,
-    offsetx: section_m1.offsetx + 10*perseat + 10*spacing,  
-    offsety: section_m1.offsety + 8*spacing,
+    offsetx: section_m1.offsetx + 9*perseat + 10*spacing,  
+    offsety: section_m1.offsety + 9*spacing,
     rows:      [5,6,8,8,8,7,7,6,6,5,5,5,5],
     rowoffsets:[0,0,0,0,0,0,0,0,0,0,0,0,0]
 }
@@ -140,11 +140,11 @@ var section_m4={
 var section_w1 = {
     startseat:0,
     sectionno:0,
-    angle: -30,
+    angle: -40,
     offsetx: section_d.offsetx + 3*perseat,
-    offsety: section_m1.offsety,
+    offsety: section_m1.offsety + 2*perseat,
     rows:      [9, 9, 10, 9, 7, 5, 4, 2],
-    rowoffsets:[0, 0,  0, 0, 0, 0, 0, 0]
+    rowoffsets:[0, 0,  0, 0, 1, 2, 2, 3]
 }
 
 var section_w2 = {
@@ -194,4 +194,49 @@ var sections = new Array(section_a, section_b, section_c, section_d,
 
 for(i=0; i<sections.length; i++){
     sections[i].sectionno=i;
+}
+
+function fillSections(drawCanv){
+    var localContext = drawCanv.getContext('2d');
+    //West hall balcony...
+    var lower= section_a.offsety+2*spacing;
+    var outer = section_a.offsetx + 5*perseat + spacing;
+    var corner1 = section_b.offsety - 9*perseat + 2;
+    var corner2 = section_d.offsety + 4*perseat + 2*spacing;
+    var corner3 = section_d.offsetx + section_d.rows[0]*perseat + 2*spacing;
+    localContext.fillStyle = "#BBBBBB";
+    localContext.strokeStyle = "#000000";
+    localContext.beginPath();
+    localContext.lineTo(0, lower);
+    localContext.lineTo(outer, lower);
+    localContext.lineTo(outer, corner1);
+    localContext.lineTo(section_d.offsetx + 2*perseat, corner2);
+    localContext.lineTo(corner3, corner2);
+    localContext.lineTo(corner3, 0);
+    localContext.lineTo(0, 0);
+    localContext.lineWidth=5;
+    localContext.fill();
+    localContext.closePath();
+
+    var startx = section1.offsetx - 2*spacing;
+    lower = section1.rows.length * perseat + perseat + spacing;
+    corner1 = section2.offsetx + section2.rows[section2.rows.length-1]*perseat - perseat;
+    corner2 = section5.offsety - section5.rows.length*perseat - 2*perseat;
+    corner3 = section5.offsetx - section5.rows[section5.rows.length-1]*perseat;
+    var corner4 = section5.offsety+2*spacing;
+    var corner5 = section4.offsetx + 2*spacing;
+    localContext.beginPath();
+    localContext.moveTo(startx, 0);
+    localContext.lineTo(startx, lower);
+    localContext.lineTo(corner1, lower);
+    localContext.lineTo(corner1, corner2);
+    localContext.lineTo(corner3, corner2);
+    localContext.lineTo(corner3, corner4);
+    localContext.lineTo(section5.offsetx+2*spacing, corner4);
+    localContext.lineTo(section5.offsetx+2*spacing, corner2);
+    localContext.lineTo(corner5, corner2);
+    localContext.lineTo(corner5, 0);
+    localContext.fill();
+    localContext.closePath();
+    localContext.strokeStyle="#FFFFFF";
 }

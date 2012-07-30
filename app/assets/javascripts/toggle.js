@@ -194,9 +194,9 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
         dims.height,
         dims.width, 
         0, Math.PI*2,true);
-
-    context.closePath();
     context.fill();
+    context.closePath();
+
 
     return seatno;
 }
@@ -204,9 +204,8 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
 // canvas image manipulation 
 function draw(drawCanv, colorfunc, sectionfunc) {
     var localContext = drawCanv.getContext('2d');
-    localContext.fillStyle = "#FFFFFF";
-    localContext.fillRect(0, 0, drawCanv.width, drawCanv.height);
-
+    localContext.lineWidth=0;
+    localContext.strokeStyle="#FFFFFF";
     var seatno=0;
     for(ix=0; ix<sections.length; ix++){
         seatno=drawSection(sections[ix], localContext, seatno, colorfunc, sectionfunc);
@@ -215,7 +214,6 @@ function draw(drawCanv, colorfunc, sectionfunc) {
 }
 
 function process(evt) {
-
 	canvas = document.getElementById('seatCanvas');
     var mous = getMousePos(evt);
 
@@ -248,9 +246,9 @@ function process(evt) {
             }
         }
         if(allModified.length > 0){
+            redraw();
             postMultipleSeats(allModified);
         }
-        draw(canvas, realColor, filledColor);
     }
     if(pickedseat < seats.length && pickedseat >= 0){
         if(seats[pickedseat]==0){ 
@@ -259,8 +257,8 @@ function process(evt) {
         else{
             seats[pickedseat]=0;
         }
+        redraw();
         sendSeatsJSON(pickedseat);
-        draw(canvas, realColor, filledColor);
     }
 }
 
@@ -281,12 +279,15 @@ function getSeat(mousePos){
     }else if(data.data[2]==0){
         return data.data[0] + data.data[1]*256;
     }
-    return -258;
-    
+    return -258; 
 }
 
 function redraw(){
     canvas = document.getElementById('seatCanvas');
+    var lctx=canvas.getContext('2d');
+//    lctx.fillStyle = "#FFFFFF";
+//    lctx.fillRect(0, 0, drawCanv.width, drawCanv.height);
+    fillSections(canvas);
     draw(canvas, realColor, filledColor);
 }
 
@@ -302,6 +303,9 @@ function init() {
     ghostcanvas = document.createElement('canvas');//getElementById('ghostcanvas');
     ghostcanvas.height = canvas.height;
     ghostcanvas.width = canvas.width;
+    var lctx=ghostcanvas.getContext('2d');
+    lctx.fillStyle = "#FFFFFF";
+    lctx.fillRect(0, 0, ghostcanvas.width, ghostcanvas.height);
     draw(ghostcanvas, pickColorSeat, pickColorSection);
 
     poll();
