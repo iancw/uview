@@ -186,7 +186,9 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
     section.startseat=seatno;
     var filled=0;
     var empty=0;
-    //For each row in the section...
+
+    //Points are used to keep track of the outer bounding hull of a section,
+    //which allows you to click anywhere on a section in the overview
     var points=[];
     var points2=[];
     
@@ -224,8 +226,19 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
         sectionCol=0;
     }
 
+    //currentSection == undefined means we're in overview mode
     if(currentSection == undefined){
-        var sectionPick=sectioncolor(sectionCol, -300);
+        drawSectionHull(context, section, points, sectioncolor, sectionCol);
+        
+    }else{
+        drawSectionToggle(context, section, sectioncolor, sectionCol);
+    }
+
+    return seatno;
+}
+
+function drawSectionHull(context, section, points, sectioncolor, sectionCol){
+    var sectionPick=sectioncolor(sectionCol, -300);
         if(sectionPick != null){
             context.fillStyle=sectioncolor(sectionCol, section.sectionno);
             context.beginPath();
@@ -234,12 +247,14 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
             }
             context.fill();
             context.closePath();
-    }
-    }
+        }
+}
 
+function drawSectionToggle(context, section, sectioncolor, sectionCol)
+{
     //Make the color opposite of the majority
-    //to make it most convenient to toggle
-   
+    //to ma ke it most convenient to toggle
+       
     context.translate(0, section.rows.length * perseat);
     context.fillStyle=sectioncolor(sectionCol, section.sectionno);
     var sectoffset = section.rowoffsets[section.rows.length-1];
@@ -250,8 +265,6 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
         0, Math.PI*2,true);
     context.fill();
     context.closePath();
-
-    return seatno;
 }
 
 // canvas image manipulation 
@@ -293,8 +306,9 @@ function process(evt) {
             toggleSeat(pickedseat);
         }else{
             //if the value is less than zero, it's code for a row or for the whole section...
-            if(pickedseat < 0){
-               sec=sections[(-1*pickedseat)-1];
+            var pickedSection = (-1*pickedseat)-1;
+            if(pickedSection < sections.length){
+               sec=sections[pickedSection];
                 toggleSection(currentSection);
             }
         }
