@@ -4,6 +4,16 @@ var image;
 
 var seats = [];
 
+//Updated count every draw, for potential user display
+var numFilled=0;
+
+//Is null for overview, if not null, draw function
+//will only draw this section, for easier data entry
+var currentSection;
+
+//Code passed when section close button is clicked
+var exitSection = 500;
+
 var winW = 650, winH = 650;
 /*
 if (document.body && document.body.offsetWidth) {
@@ -164,9 +174,6 @@ function realColor(seatno){
 }
 
 function drawSection(section, context, seatno, colorfunc, sectioncolor){
-    context.translate(section.offsetx, section.offsety);
-    context.rotate(section.angle * Math.PI / 180.0);
-
     section.startseat=seatno;
     var filled=0;
     var empty=0;
@@ -235,64 +242,112 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
 }
 
 // canvas image manipulation 
-function draw(drawCanv, colorfunc, sectionfunc) {
+function drawAllSections(drawCanv, colorfunc, sectionfunc) {
     var localContext = drawCanv.getContext('2d');
     localContext.lineWidth=0;
     localContext.strokeStyle="#FFFFFF";
     var seatno=0;
     for(ix=0; ix<sections.length; ix++){
+
+        localContext.translate(sections[ix].offsetx, sections[ix].offsety);
+        localContext.rotate(sections[ix].angle * Math.PI / 180.0);
+
         seatno=drawSection(sections[ix], localContext, seatno, colorfunc, sectionfunc);
         localContext.setTransform(1, 0, 0, 1, 0, 0);
     }
 }
 
+/*
+* Either picks a current section, or picks and toggles a seat in that section...
+*/
 function process(evt) {
     canvas = document.getElementById('seatCanvas');
     var mous = getMousePos(evt);
 
     var pickedseat = getSeat(mous);
 
-    if(pickedseat < 0){
-        //Select or deselect all seats in the section...
-        sec=sections[(-1*pickedseat)-1]
-        var filled=0, empty=0, seatoff=0;
-        for(ssi=0; ssi<sec.rows.length; ssi++){
-            for(rri=0; rri<sec.rows[ssi]; rri++){
-                if(seats[sec.startseat+seatoff]==1){
-                    filled++;
-                }else{
-                    empty++;
-                }
-                seatoff++;
+    //When currentSection is not undefined, we're in a section
+    //focus view, so we either toggle a seat, toggle a row, 
+    //or toggle the whole section
+    if(currentSection != undefined)
+    {
+        //If the value is positive and a valid index into the
+        //seats array, we toggle that one seat
+        if(pickedseat < seats.length && pickedseat >= 0)
+        {
+            //pick a seat...
+            toggleSeat(pickedseat);
+        }else{
+            //if the value is less than zero, it's code for a row or for the whole section...
+            if(pickedseat < 0){
+               sec=sections[(-1*pickedseat)-1];
+                toggleSection(sec);
             }
         }
-        var fillval=1;
-        if(filled > empty){
-            fillval=0;
-        }
-        var allModified=[];
-        for(sso=0; sso<seatoff; sso++){
-            var seatno = sec.startseat + sso;
-            if(seats[seatno] != fillval){
-                seats[seatno] = fillval;
-                allModified[allModified.length] = {id: (seatno+1), state: seats[seatno]};
-            }
-        }
-        if(allModified.length > 0){
+    }else{
+        //Current section is undefined, so we're in the overview...
+       if(pickedseat < 0){
+            sec=sections[(-1*pickedseat)-1];
+            currentSection = sec;
             redraw();
-            postMultipleSeats(allModified);
+        }else if(pickedseat == exitSection){
+            currentSection=undefined;
+            redraw();
         }
     }
-    if(pickedseat < seats.length && pickedseat >= 0){
-        if(seats[pickedseat]==0){ 
-            seats[pickedseat]=1;
+}
+
+/*
+* Toggles state of the section
+*/
+function toggleSection(sec){
+    //Select or deselect all seats in the section...
+    //Clicked on a section...
+
+    showInfo("Picked section "+sec.sectionno);
+    currentSection=sec;
+    var filled=0, empty=0, seatoff=0;
+    for(ssi=0; ssi<sec.rows.length; ssi++){
+        for(rri=0; rri<sec.rows[ssi]; rri++){
+            if(seats[sec.startseat+seatoff]==1){
+                filled++;
+            }else{
+                empty++;
+            }
+            seatoff++;
         }
-        else{
-            seats[pickedseat]=0;
+    }
+    var fillval=1;
+    if(filled > empty){
+        fillval=0;
+    }
+    var allModified=[];
+    for(sso=0; sso<seatoff; sso++){
+        var seatno = sec.startseat + sso;
+        if(seats[seatno] != fillval){
+            seats[seatno] = fillval;
+            allModified[allModified.length] = {id: (seatno+1), state: seats[seatno]};
         }
+    }
+    if(allModified.length > 0){
         redraw();
-        sendSeatsJSON(pickedseat);
+        postMultipleSeats(allModified);
     }
+}
+
+/*
+ * Assumes pickedseat is < seats.length and >= 0; a valid seat index
+*/
+function toggleSeat(pickedseat)
+{
+    if(seats[pickedseat]==0){ 
+        seats[pickedseat]=1;
+    }
+    else{
+        seats[pickedseat]=0;
+    }
+    redraw();
+    sendSeatsJSON(pickedseat);
 }
 
 /*
@@ -312,23 +367,27 @@ function getSeat(mousePos){
     }else if(data.data[2]==0){
         return data.data[0] + data.data[1]*256;
     }
-    return -258; 
+    return -258;
 }
 
 function redraw(){
-    canvas = document.getElementById('seatCanvas');
+    canvas = $('#seatCanvas')[0];
     var lctx=canvas.getContext('2d');
-//    lctx.fillStyle = "#FFFFFF";
-//    lctx.fillRect(0, 0, drawCanv.width, drawCanv.height);
-    fillSections(canvas);
-    draw(canvas, realColor, filledColor);
-    updateSeatsText();
+    if(currentSection == undefined){
+        fillSections(canvas);
+        drawAllSections(canvas, realColor, filledColor);
+        updateSeatsText();
+    }else{
+        //Draw current section
+        lctx.fillStyle="#FFFFFF";
+        lctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawSection(currentSection, lctx, currentSection.startseat, realColor, filledColor);
+        ctx.setTransform(1,0,0,1,0,0);
+    }
 }
 
-function updateSeatsText(){
-    var instructions = document.getElementById("p1");
-    var newText = document.createTextNode("Hi, new text!");
-    instructions.insertBefore(newText, instructions.firstChild);
+function showInfo(val){
+    $("#infoDiv").html(val);
 }
 
 function init() {
@@ -338,7 +397,7 @@ function init() {
     canvas.height = canvHeight;
 
     canvas.addEventListener('click', process, false);
-    draw(canvas, realColor, filledColor);
+    drawAllSections(canvas, realColor, filledColor);
 
     ghostcanvas = document.createElement('canvas');//getElementById('ghostcanvas');
     ghostcanvas.height = canvas.height;
@@ -346,7 +405,7 @@ function init() {
     var lctx=ghostcanvas.getContext('2d');
     lctx.fillStyle = "#FFFFFF";
     lctx.fillRect(0, 0, ghostcanvas.width, ghostcanvas.height);
-    draw(ghostcanvas, pickColorSeat, pickColorSection);
+    drawAllSections(ghostcanvas, pickColorSeat, pickColorSection);
 
     poll();
 }
