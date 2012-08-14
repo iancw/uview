@@ -166,6 +166,7 @@ function filledColor(filled, sectionno){
     return "#000000"; 
 }
 
+
 function realColor(seatno){
     if(seatno < seats.length){
        return filledColor(seats[seatno]);
@@ -173,6 +174,14 @@ function realColor(seatno){
    return "#FFFFFF";
 }
 
+/*
+* Parametrs:
+* section - actual section object / struct
+* context - canvas 2d context for drawing
+* seatno - start seatno, used to set section.startseat on the first time
+* colorfunc - function to color seats, used for picking / display 
+* sectioncolor - function to color sections, used to pick an entire section for focus.
+*/
 function drawSection(section, context, seatno, colorfunc, sectioncolor){
     section.startseat=seatno;
     var filled=0;
@@ -201,6 +210,8 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
             y:(ro+1)*perseat
         };
     }
+    //Add the filled seats for this section
+    numFilled = numFilled + filled;
     points[points.length] = {
         x: section.rowoffsets[section.rowoffsets.length-1]*perseat,
         y: (section.rows.length)*perseat
@@ -208,20 +219,22 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
  
     points = points.concat(points2.reverse());
 
-     var sectionCol=1;
+    var sectionCol=1;
     if(filled > empty){
         sectionCol=0;
     }
 
-    var sectionPick=sectioncolor(sectionCol, -300);
-    if(sectionPick != null){
-        context.fillStyle=sectioncolor(sectionCol, section.sectionno);
-        context.beginPath();
-        for(i=0; i<points.length; i++){
-        context.lineTo(points[i].x, points[i].y);
-        }
-        context.fill();
-        context.closePath();
+    if(currentSection == undefined){
+        var sectionPick=sectioncolor(sectionCol, -300);
+        if(sectionPick != null){
+            context.fillStyle=sectioncolor(sectionCol, section.sectionno);
+            context.beginPath();
+            for(i=0; i<points.length; i++){
+            context.lineTo(points[i].x, points[i].y);
+            }
+            context.fill();
+            context.closePath();
+    }
     }
 
     //Make the color opposite of the majority
@@ -247,6 +260,7 @@ function drawAllSections(drawCanv, colorfunc, sectionfunc) {
     localContext.lineWidth=0;
     localContext.strokeStyle="#FFFFFF";
     var seatno=0;
+    numFilled=0;
     for(ix=0; ix<sections.length; ix++){
 
         localContext.translate(sections[ix].offsetx, sections[ix].offsety);
@@ -281,7 +295,7 @@ function process(evt) {
             //if the value is less than zero, it's code for a row or for the whole section...
             if(pickedseat < 0){
                sec=sections[(-1*pickedseat)-1];
-                toggleSection(sec);
+                toggleSection(currentSection);
             }
         }
     }else{
@@ -303,9 +317,8 @@ function process(evt) {
 function toggleSection(sec){
     //Select or deselect all seats in the section...
     //Clicked on a section...
-
-    showInfo("Picked section "+sec.sectionno);
     currentSection=sec;
+    showInfo("Picked section "+sec.sectionno);
     var filled=0, empty=0, seatoff=0;
     for(ssi=0; ssi<sec.rows.length; ssi++){
         for(rri=0; rri<sec.rows[ssi]; rri++){
@@ -353,6 +366,10 @@ function toggleSeat(pickedseat)
 /*
 * If value returned is greater than 1, it's a seat number
 * If it's less than 1, it's a section number
+* 
+* Special codes:  
+*  -257 means the click is outside of the canvas
+*  -258 means the click didn't hit anything
 */
 function getSeat(mousePos){
     if(mousePos.x >= ghostcanvas.width || mousePos.y >= ghostcanvas.height){
@@ -372,17 +389,24 @@ function getSeat(mousePos){
 
 function redraw(){
     canvas = $('#seatCanvas')[0];
+    redrawCanvas(canvas, realColor, filledColor);
+    redrawCanvas(ghostcanvas, pickColorSeat, pickColorSection);
+}
+ 
+
+function redrawCanvas(canvas, seatColor, sectionColor)
+{
     var lctx=canvas.getContext('2d');
     if(currentSection == undefined){
         fillSections(canvas);
-        drawAllSections(canvas, realColor, filledColor);
-        updateSeatsText();
+        drawAllSections(canvas, seatColor, sectionColor);
+        showInfo("Currently "+numFilled+" occupied seats");
     }else{
         //Draw current section
         lctx.fillStyle="#FFFFFF";
         lctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawSection(currentSection, lctx, currentSection.startseat, realColor, filledColor);
-        ctx.setTransform(1,0,0,1,0,0);
+        drawSection(currentSection, lctx, currentSection.startseat, seatColor, sectionColor);
+        lctx.setTransform(1,0,0,1,0,0);
     }
 }
 
