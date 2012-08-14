@@ -147,6 +147,9 @@ function pickColorSection(filled, sectionno){
 }
 
 function filledColor(filled, sectionno){
+    if(sectionno == -300){
+        return null;
+    }
     if(filled == 0){
         return "#00FF00";
     }
@@ -168,6 +171,13 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
     var filled=0;
     var empty=0;
     //For each row in the section...
+    var points=[];
+    var points2=[];
+    
+     points2[points2.length] = {
+        x: section.rowoffsets[0]*perseat + section.rows[0]*perseat,
+        y: 0
+     };
     for(ro=0; ro<section.rows.length; ro++){
         //for each seat in the row...
         for(i=0; i<section.rows[ro]; i++){
@@ -175,18 +185,42 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
             context.fillStyle = colorfunc(seatno);
             if(seats[seatno] == 0){empty++;}
             else{ filled++; }
-            context.fillRect(radius, 0, dims.width,dims.height);
+            context.fillRect(radius, ro*perseat, dims.width,dims.height);
             seatno++;
         }
-        context.translate(0, (dims.height+spacing));
+        points[points.length] = {x: section.rowoffsets[ro]*perseat, y:(ro)*perseat};
+        points2[points2.length] = {
+            x: section.rowoffsets[ro]*perseat + section.rows[ro]*perseat,
+            y:(ro+1)*perseat
+        };
     }
-    //Make the color opposite of the majority
-    //to make it most convenient to toggle
-    
-    var sectionCol=1;
+    points[points.length] = {
+        x: section.rowoffsets[section.rowoffsets.length-1]*perseat,
+        y: (section.rows.length)*perseat
+     };
+ 
+    points = points.concat(points2.reverse());
+
+     var sectionCol=1;
     if(filled > empty){
         sectionCol=0;
     }
+
+    var sectionPick=sectioncolor(sectionCol, -300);
+    if(sectionPick != null){
+        context.fillStyle=sectioncolor(sectionCol, section.sectionno);
+        context.beginPath();
+        for(i=0; i<points.length; i++){
+        context.lineTo(points[i].x, points[i].y);
+        }
+        context.fill();
+        context.closePath();
+    }
+
+    //Make the color opposite of the majority
+    //to make it most convenient to toggle
+   
+    context.translate(0, section.rows.length * perseat);
     context.fillStyle=sectioncolor(sectionCol, section.sectionno);
     var sectoffset = section.rowoffsets[section.rows.length-1];
     context.beginPath();
@@ -196,7 +230,6 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
         0, Math.PI*2,true);
     context.fill();
     context.closePath();
-
 
     return seatno;
 }
@@ -214,7 +247,7 @@ function draw(drawCanv, colorfunc, sectionfunc) {
 }
 
 function process(evt) {
-	canvas = document.getElementById('seatCanvas');
+    canvas = document.getElementById('seatCanvas');
     var mous = getMousePos(evt);
 
     var pickedseat = getSeat(mous);
@@ -289,6 +322,13 @@ function redraw(){
 //    lctx.fillRect(0, 0, drawCanv.width, drawCanv.height);
     fillSections(canvas);
     draw(canvas, realColor, filledColor);
+    updateSeatsText();
+}
+
+function updateSeatsText(){
+    var instructions = document.getElementById("p1");
+    var newText = document.createTextNode("Hi, new text!");
+    instructions.insertBefore(newText, instructions.firstChild);
 }
 
 function init() {
