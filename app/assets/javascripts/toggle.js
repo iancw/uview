@@ -454,8 +454,8 @@ function redrawCanvas(canvas, seatColor, sectionColor)
         showInfo("Currently "+numFilled+" occupied seats");
     }else{
         //Draw current section
-        canvas.width=window.innerWidth;
-        canvas.height=window.innerHeight-50;
+        canvas.width=screen.width;
+        canvas.height=screen.height;
         lctx.fillStyle="#FFFFFF";
         lctx.fillRect(0, 0, canvas.width, canvas.height);
         scaleSection(currentSection);
