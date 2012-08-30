@@ -460,9 +460,10 @@ function redrawCanvas(canvas, seatColor, sectionColor)
         lctx.fillRect(0, 0, canvas.width, canvas.height);
         scaleSection(currentSection);
 
+        numFilled=0
         drawSection(currentSection, lctx, currentSection.startseat, seatColor, sectionColor);
         lctx.setTransform(1,0,0,1,0,0);
-        showInfo("Currently "+numFilled+" occupied seats");
+        showInfo("Currently "+numFilled+" occupied seats in section; screen size: "+screen.width+"x"+screen.height+", <br/> window size: "+window.innerWidth+"x"+window.innerHeight);
     }
 }
 
