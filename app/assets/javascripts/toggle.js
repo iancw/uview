@@ -329,8 +329,7 @@ function process(evt) {
             //254 is code for exit section view...
             if(pickedSection == 254)
             {
-                currentSection = undefined;
-                redraw();
+                switchToOverview();
                 return;
             }
             if(pickedSection < sections.length){
@@ -349,6 +348,12 @@ function process(evt) {
             redraw();
         }
     }
+}
+
+function switchToOverview()
+{
+    currentSection = undefined;
+    redraw();
 }
 
 /*
@@ -449,6 +454,7 @@ function redrawCanvas(canvas, seatColor, sectionColor)
         perseat = dims.width + spacing;
         canvas.width=canvWidth;
         canvas.height=canvHeight;
+        $('#controlDiv').html('');
         lctx.fillStyle="#FFFFFF";
         lctx.fillRect(0, 0, canvas.width, canvas.height);
         fillSections(canvas);
@@ -460,6 +466,9 @@ function redrawCanvas(canvas, seatColor, sectionColor)
         canvas.height=screen.height;
         lctx.fillStyle="#FFFFFF";
         lctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        $('#controlDiv').html('<input type="button" value="Back" onclick="switchToOverview()"/>');
+
         minOffset = scaleSection(currentSection);
 
         numFilled=0
