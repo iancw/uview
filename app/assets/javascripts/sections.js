@@ -73,8 +73,8 @@ var section3 = {
     angle: 90,
     offsetx: section2.offsetx + 12*perseat + 2*spacing,
     offsety: section2.rows.length * perseat - 3*perseat,
-    rows: [14, 10, 9],
-    rowoffsets: [0, 4, 5]
+    rows: [11, 10, 9],
+    rowoffsets: [2, 3, 4]
 }
 
 var section4 = {
@@ -82,7 +82,7 @@ var section4 = {
     sectionno:7,
     angle:90,
     offsetx: section3.offsetx,
-    offsety: section3.offsety + 14*perseat + 2*spacing,
+    offsety: section3.offsety + 15*perseat + 2*spacing,
     rows: [8, 8, 8],
     rowoffsets: [0, 0, 0]
 }

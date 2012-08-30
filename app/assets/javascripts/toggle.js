@@ -29,7 +29,8 @@ if (document.compatMode=='CSS1Compat' &&
 if (window.innerWidth && window.innerHeight) {
  winW = window.innerWidth;
  winH = window.innerHeight;
-}*/
+}
+*/
 
 canvWidth=winW;
 canvHeight=winH-50;
@@ -70,7 +71,7 @@ function poll(){
 }
 
 function refreshSeats(){
-     if (request.readyState == 4) {
+    if (request.readyState == 4) {
         if(request.status == 200){
             var seatsJSON = jQuery.parseJSON(request.responseText);
             for(sji=0; sji<seatsJSON.length; sji++){
@@ -160,6 +161,10 @@ function filledColor(filled, sectionno){
     if(sectionno == -300){
         return null;
     }
+    if(sectionno == 254)
+    {
+        return "#FF0000";
+    }
     if(filled == 0){
         return "#00FF00";
     }
@@ -175,7 +180,7 @@ function realColor(seatno){
 }
 
 /*
-* Parametrs:
+* Parameters:
 * section - actual section object / struct
 * context - canvas 2d context for drawing
 * seatno - start seatno, used to set section.startseat on the first time
@@ -192,7 +197,7 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
     var points=[];
     var points2=[];
     
-     points2[points2.length] = {
+    points2[points2.length] = {
         x: section.rowoffsets[0]*perseat + section.rows[0]*perseat,
         y: 0
      };
@@ -232,22 +237,35 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
         
     }else{
         drawSectionToggle(context, section, sectioncolor, sectionCol);
+        drawSectionExit(context, section, sectioncolor, sectionCol);
     }
 
     return seatno;
 }
 
+/*
+* sectionCol - 1 means draw the section toggle green
+*            - 0 means draw the section toggle black            
+*/
 function drawSectionHull(context, section, points, sectioncolor, sectionCol){
     var sectionPick=sectioncolor(sectionCol, -300);
-        if(sectionPick != null){
-            context.fillStyle=sectioncolor(sectionCol, section.sectionno);
-            context.beginPath();
-            for(i=0; i<points.length; i++){
-            context.lineTo(points[i].x, points[i].y);
-            }
-            context.fill();
-            context.closePath();
+    if(sectionPick != null){
+        context.fillStyle=sectioncolor(sectionCol, section.sectionno);
+        context.beginPath();
+        for(i=0; i<points.length; i++){
+        context.lineTo(points[i].x, points[i].y);
         }
+        context.fill();
+        context.closePath();
+    }
+}
+
+function drawSectionExit(context, section, sectioncolor, sectionCol)
+{
+    //This assumes its called right after SectionToggle
+    context.translate(dims.width*2, 0);
+    context.fillStyle=sectioncolor(sectionCol, 254);
+    context.fillRect(10, 0, 2*dims.width, 2*dims.height);
 }
 
 function drawSectionToggle(context, section, sectioncolor, sectionCol)
@@ -265,6 +283,7 @@ function drawSectionToggle(context, section, sectioncolor, sectionCol)
         0, Math.PI*2,true);
     context.fill();
     context.closePath();
+
 }
 
 // canvas image manipulation 
@@ -307,6 +326,13 @@ function process(evt) {
         }else{
             //if the value is less than zero, it's code for a row or for the whole section...
             var pickedSection = (-1*pickedseat)-1;
+            //254 is code for exit section view...
+            if(pickedSection == 254)
+            {
+                currentSection = undefined;
+                redraw();
+                return;
+            }
             if(pickedSection < sections.length){
                sec=sections[pickedSection];
                 toggleSection(currentSection);
@@ -373,7 +399,7 @@ function toggleSeat(pickedseat)
     else{
         seats[pickedseat]=0;
     }
-    redraw();
+    redrawSeat(pickedseat);
     sendSeatsJSON(pickedseat);
 }
 
@@ -406,22 +432,58 @@ function redraw(){
     redrawCanvas(canvas, realColor, filledColor);
     redrawCanvas(ghostcanvas, pickColorSeat, pickColorSection);
 }
+
+function redrawSeat(seatno){
+    canvas = $('#seatCanvas')[0];
+    redrawCanvas(canvas, realColor, filledColor);
+}
  
 
 function redrawCanvas(canvas, seatColor, sectionColor)
 {
     var lctx=canvas.getContext('2d');
     if(currentSection == undefined){
+        dims.width = 10;
+        dims.height = 10;
+        spacing = 5;
+        perseat = dims.width + spacing;
+        lctx.fillStyle="#FFFFFF";
+        lctx.fillRect(0, 0, canvas.width, canvas.height);
         fillSections(canvas);
         drawAllSections(canvas, seatColor, sectionColor);
         showInfo("Currently "+numFilled+" occupied seats");
     }else{
         //Draw current section
+        canvas.width=window.innerWidth;
+        canvas.height=window.innerHeight-50;
         lctx.fillStyle="#FFFFFF";
         lctx.fillRect(0, 0, canvas.width, canvas.height);
+        scaleSection(currentSection);
+
         drawSection(currentSection, lctx, currentSection.startseat, seatColor, sectionColor);
         lctx.setTransform(1,0,0,1,0,0);
     }
+}
+
+function scaleSection(sect)
+{
+    //Add two rows to account for control buttons at the bottom
+    var numRows = sect.rows.length + 5;
+    var numCols = sect.rows[0];
+    for(i=0; i<numRows; i++)
+    {
+        if(sect.rows[i] > numCols)
+        {
+            numCols = sect.rows[i];
+        }
+    }
+    var pxPerRow = canvas.height / numRows;
+    var pxPerCol = canvas.width / numCols;
+    perseat = Math.min(pxPerRow, pxPerCol);
+    spacing = 1.0/3.0 * perseat;
+    dims.width =  perseat - spacing;
+//    alert("px per seat = "+perseat+", pxPerRow="+pxPerRow+", pxPerCol="+pxPerCol+" / dims.width="+dims.width)
+    dims.height = dims.width;
 }
 
 function showInfo(val){
