@@ -462,13 +462,14 @@ function redrawCanvas(canvas, seatColor, sectionColor)
 
         drawSection(currentSection, lctx, currentSection.startseat, seatColor, sectionColor);
         lctx.setTransform(1,0,0,1,0,0);
+        showInfo("Currently "+numFilled+" occupied seats");
     }
 }
 
 function scaleSection(sect)
 {
     //Add two rows to account for control buttons at the bottom
-    var numRows = sect.rows.length + 5;
+    var numRows = sect.rows.length +2;
     var numCols = sect.rows[0];
     for(i=0; i<numRows; i++)
     {
