@@ -460,10 +460,13 @@ function redrawCanvas(canvas, seatColor, sectionColor)
         canvas.height=screen.height;
         lctx.fillStyle="#FFFFFF";
         lctx.fillRect(0, 0, canvas.width, canvas.height);
-        scaleSection(currentSection);
+        minOffset = scaleSection(currentSection);
 
         numFilled=0
-        drawSection(currentSection, lctx, currentSection.startseat, seatColor, sectionColor);
+        //translate left to compensate for row translation...
+        //m11, m12, m21, m22, dx, dy
+        lctx.setTransform(1,0,0,1,-1*minOffset*perseat,0);
+        minOffset = drawSection(currentSection, lctx, currentSection.startseat, seatColor, sectionColor);
         lctx.setTransform(1,0,0,1,0,0);
         showInfo("Currently "+numFilled+" occupied seats in section; screen size: "+screen.width+"x"+screen.height+", <br/> window size: "+window.innerWidth+"x"+window.innerHeight);
     }
@@ -474,11 +477,16 @@ function scaleSection(sect)
     //Add two rows to account for control buttons at the bottom
     var numRows = sect.rows.length +2;
     var numCols = sect.rows[0];
+    var minOffset = sect.rowoffsets[0];
     for(i=0; i<numRows; i++)
     {
         if(sect.rows[i] > numCols)
         {
             numCols = sect.rows[i];
+        }
+        if(sect.rowoffsets[i] < minOffset)
+        {
+            minOffset = sect.rowoffsets[i];
         }
     }
     var pxPerRow = canvas.height / numRows;
@@ -486,8 +494,8 @@ function scaleSection(sect)
     perseat = Math.min(pxPerRow, pxPerCol);
     spacing = 1.0/3.0 * perseat;
     dims.width =  perseat - spacing;
-//    alert("px per seat = "+perseat+", pxPerRow="+pxPerRow+", pxPerCol="+pxPerCol+" / dims.width="+dims.width)
     dims.height = dims.width;
+    return minOffset;
 }
 
 function showInfo(val){
