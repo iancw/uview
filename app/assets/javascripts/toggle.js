@@ -237,7 +237,7 @@ function drawSection(section, context, seatno, colorfunc, sectioncolor){
         
     }else{
         drawSectionToggle(context, section, sectioncolor, sectionCol);
-        drawSectionExit(context, section, sectioncolor, sectionCol);
+        //drawSectionExit(context, section, sectioncolor, sectionCol);
     }
 
     return seatno;
