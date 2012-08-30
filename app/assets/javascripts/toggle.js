@@ -447,6 +447,8 @@ function redrawCanvas(canvas, seatColor, sectionColor)
         dims.height = 10;
         spacing = 5;
         perseat = dims.width + spacing;
+        canvas.width=canvWidth;
+        canvas.height=canvHeight;
         lctx.fillStyle="#FFFFFF";
         lctx.fillRect(0, 0, canvas.width, canvas.height);
         fillSections(canvas);
