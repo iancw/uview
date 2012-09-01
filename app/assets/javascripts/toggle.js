@@ -167,9 +167,9 @@ function filledColor(filled, sectionno){
         return "#FF0000";
     }
     if(filled == 0){
-        return "#00FF00";
+        return "#000000";
     }
-    return "#000000"; 
+    return "#0066cc"; 
 }
 
 
@@ -476,7 +476,7 @@ function redrawCanvas(canvas, seatColor, sectionColor)
     if(currentSection == undefined){
         fillSections(canvas);
         drawAllSections(canvas, seatColor, sectionColor);
-        showInfo("Currently "+numFilled+" occupied seats");
+        showInfo("Occupied (total): "+numFilled);
     }else{
         
         numFilled=0
@@ -485,7 +485,7 @@ function redrawCanvas(canvas, seatColor, sectionColor)
         lctx.setTransform(1,0,0,1,-1*minOffset*perseat,0);
         drawSection(currentSection, lctx, currentSection.startseat, seatColor, sectionColor);
         lctx.setTransform(1,0,0,1,0,0);
-        showInfo("Currently "+numFilled+" occupied seats in section");
+        showInfo("Occupied (section): "+numFilled);
     }
 }
 
@@ -532,7 +532,7 @@ function init() {
     canvas.addEventListener('click', process, false);
     drawAllSections(canvas, realColor, filledColor);
 
-    ghostcanvas = document.createElement('canvas');//getElementById('ghostcanvas');
+    ghostcanvas = document.createElement('canvas');
     ghostcanvas.height = canvas.height;
     ghostcanvas.width = canvas.width;
     var lctx=ghostcanvas.getContext('2d');
