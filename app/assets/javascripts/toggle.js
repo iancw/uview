@@ -15,6 +15,7 @@ var currentSection;
 var exitSection = 500;
 
 var winW = 650, winH = 650;
+var minOffset=0;
 /*
 if (document.body && document.body.offsetWidth) {
  winW = document.body.offsetWidth;
@@ -334,18 +335,16 @@ function process(evt) {
             }
             if(pickedSection < sections.length){
                sec=sections[pickedSection];
-                toggleSection(currentSection);
+               toggleSection(currentSection);
             }
         }
     }else{
         //Current section is undefined, so we're in the overview...
        if(pickedseat < 0){
             sec=sections[(-1*pickedseat)-1];
-            currentSection = sec;
-            redraw();
+            focusOnSection(sec);
         }else if(pickedseat == exitSection){
-            currentSection=undefined;
-            redraw();
+            switchToOverview();
         }
     }
 }
@@ -353,6 +352,31 @@ function process(evt) {
 function switchToOverview()
 {
     currentSection = undefined;
+    dims.width = 10;
+    dims.height = 10;
+    spacing = 5;
+    perseat = dims.width + spacing;
+    canvas.width=canvWidth;
+    canvas.height=canvHeight;
+    ghostcanvas.width=canvas.width;
+    ghostcanvas.height=canvas.height;
+    //Remove the back button...
+    $('#controlDiv').html('');
+    redraw();
+}
+
+function focusOnSection(section)
+{
+    currentSection = section;
+    //innerWidth and innerHeight change based on zooming
+    //screen.width remains constant
+    minOffset = scaleSection(currentSection);
+    canvas.width=window.innerWidth;//screen.width;
+    canvas.height=window.innerHeight;//screen.height;
+    ghostcanvas.width=canvas.width;
+    ghostcanvas.height=canvas.height;
+    //add back button at top to go back to overview
+    $('#controlDiv').html('<input type="button" value="Overview" onclick="switchToOverview()"/>');
     redraw();
 }
 
@@ -362,7 +386,6 @@ function switchToOverview()
 function toggleSection(sec){
     //Select or deselect all seats in the section...
     //Clicked on a section...
-    currentSection=sec;
     showInfo("Picked section "+sec.sectionno);
     var filled=0, empty=0, seatoff=0;
     for(ssi=0; ssi<sec.rows.length; ssi++){
@@ -435,6 +458,7 @@ function getSeat(mousePos){
 function redraw(){
     canvas = $('#seatCanvas')[0];
     redrawCanvas(canvas, realColor, filledColor);
+    //redrawCanvas(canvas, pickColorSeat, pickColorSection);
     redrawCanvas(ghostcanvas, pickColorSeat, pickColorSection);
 }
 
@@ -447,43 +471,31 @@ function redrawSeat(seatno){
 function redrawCanvas(canvas, seatColor, sectionColor)
 {
     var lctx=canvas.getContext('2d');
+    lctx.fillStyle="#FFFFFF";
+    lctx.fillRect(0, 0, canvas.width, canvas.height);
     if(currentSection == undefined){
-        dims.width = 10;
-        dims.height = 10;
-        spacing = 5;
-        perseat = dims.width + spacing;
-        canvas.width=canvWidth;
-        canvas.height=canvHeight;
-        $('#controlDiv').html('');
-        lctx.fillStyle="#FFFFFF";
-        lctx.fillRect(0, 0, canvas.width, canvas.height);
         fillSections(canvas);
         drawAllSections(canvas, seatColor, sectionColor);
         showInfo("Currently "+numFilled+" occupied seats");
     }else{
-        //Draw current section
-        canvas.width=screen.width;
-        canvas.height=screen.height;
-        lctx.fillStyle="#FFFFFF";
-        lctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        $('#controlDiv').html('<input type="button" value="Back" onclick="switchToOverview()"/>');
-
-        minOffset = scaleSection(currentSection);
-
+        
         numFilled=0
         //translate left to compensate for row translation...
         //m11, m12, m21, m22, dx, dy
         lctx.setTransform(1,0,0,1,-1*minOffset*perseat,0);
-        minOffset = drawSection(currentSection, lctx, currentSection.startseat, seatColor, sectionColor);
+        drawSection(currentSection, lctx, currentSection.startseat, seatColor, sectionColor);
         lctx.setTransform(1,0,0,1,0,0);
-        showInfo("Currently "+numFilled+" occupied seats in section; screen size: "+screen.width+"x"+screen.height+", <br/> window size: "+window.innerWidth+"x"+window.innerHeight);
+        showInfo("Currently "+numFilled+" occupied seats in section");
     }
 }
 
 function scaleSection(sect)
 {
     //Add two rows to account for control buttons at the bottom
+    if(sec == undefined)
+    {
+        return;
+    }
     var numRows = sect.rows.length +2;
     var numCols = sect.rows[0];
     var minOffset = sect.rowoffsets[0];
