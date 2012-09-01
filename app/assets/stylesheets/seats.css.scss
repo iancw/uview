@@ -5,46 +5,17 @@ div {
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
-.filled {
-    background: none repeat scroll 0 0 #0066cc;
-    position:relative;
-    top:16px;
-    height: 10px;
-    width: 10px;
+.filled, .empty {
+    background:#0066cc;
+    height: 15px;
 }
 
 .empty {
-    background: none repeat scroll 0 0 #000000;
-    position:relative;
-    top:16px;
-    height: 10px;
-    width: 10px;
+    background:#000000;
 }
 
-.keyText {
-	position:relative;
-	top:0px;
-	left:15px;
-}
 
-.keyEntry2 {
-	position:relative;
-	top:-28px;
-	left:100px;
-}
-
-#controlDiv{
-	position:relative;
-	top:0;
-	left:0;
-}
-#infoDiv{
-	position:relative;
-	top:0;
-	left:0;
-}
-#keyDiv{
-	position:relative;
-	bottom:0;
-	left:0;
+#canvDiv{
+	clear:both;
+	margin:10px;
 }
