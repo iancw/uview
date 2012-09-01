@@ -370,9 +370,9 @@ function focusOnSection(section)
     currentSection = section;
     //innerWidth and innerHeight change based on zooming
     //screen.width remains constant
-    minOffset = scaleSection(currentSection);
     canvas.width=window.innerWidth;//screen.width;
     canvas.height=window.innerHeight;//screen.height;
+    minOffset = scaleSection(currentSection);
     ghostcanvas.width=canvas.width;
     ghostcanvas.height=canvas.height;
     //add back button at top to go back to overview
