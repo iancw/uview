@@ -377,9 +377,10 @@ function focusOnSection(section)
     ghostcanvas.height=canvas.height;
     //add back button at top to go back to overview
     $('#controlDiv').html('<input type="button" value="Overview" onclick="switchToOverview()"/>');
-    window.scrollTo(0,0);
-    redraw();
 
+    redraw();
+    //if you do scrollTo before redraw, the user can see things flying around
+    window.scrollTo(0,0);
 }
 
 /*
